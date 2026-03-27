@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallpaper App | Apply & Download</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            background: #0a0c12;
+            min-height: 100vh;
+            color: #fff;
+            transition: background-image 0.2s ease;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+            padding: 0.8rem 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, #fff, #8bb5ff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 0.2rem 0.6rem;
+            display: flex;
+            gap: 0.3rem;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            padding: 0.4rem 0.3rem;
+            color: white;
+            outline: none;
+            width: 140px;
+            font-size: 0.85rem;
+        }
+
+        .search-box input::placeholder {
+            color: #aaa;
+        }
+
+        .search-box button, .cat-btn {
+            background: #2c3e66;
+            border: none;
+            color: white;
+            padding: 0.25rem 0.8rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: 0.2s;
+        }
+
+        .cat-btn {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .cat-btn.active {
+            background: #4f7eb3;
+        }
+
+        .search-box button:hover, .cat-btn:hover {
+            background: #3e5a85;
+        }
+
+        .category-row {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.2rem;
+            padding: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(20, 28, 40, 0.7);
+            border-radius: 18px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .card img {
+            width: 100%;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            display: block;
+        }
+
+        .info {
+            padding: 0.7rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .title {
+            font-weight: 500;
+            font-size: 0.85rem;
+            flex: 1;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .apply, .download {
+            padding: 0.25rem 0.7rem;
+            border-radius: 25px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+        }
+
+        .apply {
+            background: #3e6b9e;
+            color: white;
+        }
+
+        .download {
+            background: #2c5a4c;
+            color: white;
+        }
+
+        .apply:hover, .download:hover {
+            filter: brightness(1.1);
+            transform: scale(0.96);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+
+        .modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: #11161f;
+            border-radius: 20px;
+            max-width: 85vw;
+            max-height: 85vh;
+            overflow: hidden;
+        }
+
+        .modal-content img {
+            max-width: 100%;
+            max-height: 60vh;
+            display: block;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 0.8rem;
+            padding: 1rem;
+            justify-content: center;
+        }
+
+        .modal-buttons button {
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .modal-apply {
+            background: #3e6b9e;
+            color: white;
+        }
+
+        .modal-download {
+            background: #2c5a4c;
+            color: white;
+        }
+
+        .modal-close {
+            background: #3a3f4b;
+            color: white;
+        }
+
+        .empty {
+            text-align: center;
+            grid-column: 1/-1;
+            padding: 2.5rem;
+            opacity: 0.7;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e2a3a;
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            z-index: 1100;
+            opacity: 0;
+            transition: 0.2s;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        footer {
+            text-align: center;
+            padding: 0.8rem;
+            font-size: 0.7rem;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 700px) {
+            .header { flex-direction: column; align-items: stretch; }
+            .grid { padding: 1rem; gap: 1rem; }
+            .category-row { justify-content: center; }
+            .toast { white-space: nowrap; font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🎯 Wellcome To Vipul Wallpaper Studio</h1>
+    <div class="controls">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search wallpapers...">
+            <button id="searchBtn">🔍 Find</button>
+        </div>
+        <div class="category-row" id="categoryRow">
+            <button data-cat="all" class="cat-btn active">✨ All</button>
+            <button data-cat="nature" class="cat-btn">🌿 Nature</button>
+            <button data-cat="city" class="cat-btn">🌆 City</button>
+            <button data-cat="abstract" class="cat-btn">🌀 Abstract</button>
+            <button data-cat="space" class="cat-btn">🌌 Space</button>
+            <button data-cat="myphotos" class="cat-btn">😎 My Photos</button>
+            <button data-cat="mybikes" class="cat-btn">🏍️ My Bikes</button>
+            <button data-cat="mycars" class="cat-btn">🚗 My Cars</button>
+            <button data-cat="mywatches" class="cat-btn">⌚ My Watches</button>
+            <button data-cat="traveling" class="cat-btn">✈️ Traveling</button>
+        </div>
+    </div>
+</div>
+
+<div class="grid" id="grid"></div>
+<footer>© 2026 Vipul Pal. All Rights Reserved.<strong>Apply</strong> sets as background • <strong>VIPUL.P😎🚩</strong> saves HD image</footer>
+
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <img id="modalImg" alt="preview">
+        <div class="modal-buttons">
+            <button class="modal-apply" id="modalApply">🎨 Apply</button>
+            <button class="modal-download" id="modalDownload">⬇️ Download</button>
+            <button class="modal-close" id="modalClose">Close</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast">✨ Done</div>
+
+<script>
+    // ========== COMPLETE WALLPAPER DATABASE ==========
+    // Includes all categories: Nature, City, Abstract, Space, My Photos, My Bikes, My Cars, My Watches, Traveling
+    const wallpapers = [
+        // NATURE
+        { id: 1, title: "Brivali Natinol", category: "nature", thumb: "https://2.bp.blogspot.com/-KyKfWY5sW0c/VCG6B3rcfNI/AAAAAAAAB_s/E1pN7vL3XBU/s1600/bridge%2Bat%2Bborivali%2Bnational%2Bpark.JPG", hd: "https://2.bp.blogspot.com/-KyKfWY5sW0c/VCG6B3rcfNI/AAAAAAAAB_s/E1pN7vL3XBU/s1600/bridge%2Bat%2Bborivali%2Bnational%2Bpark.JPG" },
+        { id: 2, title: "Goa", category: "nature", thumb: "https://www.agoda.com/wp-content/uploads/2024/06/Featured-image-Goa-Waterfalls-1244x700.jpg", hd: "https://www.agoda.com/wp-content/uploads/2024/06/Featured-image-Goa-Waterfalls-1244x700.jpg" },
+        { id: 3, title: "Lonavala", category: "nature", thumb: "https://canvasresort.com/news_admin/upload/news/9/news_img1_9.jpg", hd: "https://canvasresort.com/news_admin/upload/news/9/news_img1_9.jpg" },
+        { id: 4, title: "Manali ", category: "nature", thumb: "https://www.justahotels.com/wp-content/uploads/2023/10/Places-To-Visit-in-Manali.jpg", hd: "https://www.justahotels.com/wp-content/uploads/2023/10/Places-To-Visit-in-Manali.jpg" },
+        { id: 5, title: "Waterfall Khandala", category: "nature", thumb: "https://cdn1.tripoto.com/media/filter/nl/img/2380291/Image/1708954905_kune_waterfalls.jpg.webp", hd: "https://cdn1.tripoto.com/media/filter/nl/img/2380291/Image/1708954905_kune_waterfalls.jpg.webp" },
+        
+        // CITY
+        { id: 6, title: "Neon City Night", category: "city", thumb: "https://images.pexels.com/photos/466685/pexels-photo-466685.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop", hd: "https://images.pexels.com/photos/466685/pexels-photo-466685.jpeg?auto=compress&cs=tinysrgb&w=1200" },
+        { id: 7, title: "Mumbai", category: "city", thumb: "https://cdn.britannica.com/26/84526-050-45452C37/Gateway-monument-India-entrance-Mumbai-Harbour-coast.jpg", hd: "https://cdn.britannica.com/26/84526-050-45452C37/Gateway-monument-India-entrance-Mumbai-Harbour-coast.jpg" },
+        { id: 8, title: "Jaipur", category: "city", thumb: "https://cdn.britannica.com/25/242225-050-72142DF7/Front-facade-of-Palace-of-the-Winds-Hawa-Mahal-Jaipur-Rajasthan-India.jpg", hd: "https://cdn.britannica.com/25/242225-050-72142DF7/Front-facade-of-Palace-of-the-Winds-Hawa-Mahal-Jaipur-Rajasthan-India.jpg" },
+        { id: 9, title: "Abroad", category: "city", thumb: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSy_F0iv7ngS9agxA7O9gZdOc_9CJ2uCUwthg&s", hd: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSy_F0iv7ngS9agxA7O9gZdOc_9CJ2uCUwthg&s" },
+        { id: 10, title: "Udaipur", category: "city", thumb: "https://s7ap1.scene7.com/is/image/incredibleindia/city-palace-udaipur-rajasthan-1-new-attr-hero?qlt=82&ts=1742171011440", hd: "https://s7ap1.scene7.com/is/image/incredibleindia/city-palace-udaipur-rajasthan-1-new-attr-hero?qlt=82&ts=1742171011440" },
+        
+        // ABSTRACT
+        { id: 11, title: "Abstract Waveforms", category: "abstract", thumb: "https://m.media-amazon.com/images/I/61233hgcu-L._AC_UF1000,1000_QL80_.jpg", hd: "https://m.media-amazon.com/images/I/61233hgcu-L._AC_UF1000,1000_QL80_.jpg" },
+        { id: 12, title: "Sunflower", category: "abstract", thumb: "https://static.vecteezy.com/system/resources/thumbnails/047/839/321/small/large-sunflower-standing-out-in-sunflower-field-photo.jpeg", hd: "https://static.vecteezy.com/system/resources/thumbnails/047/839/321/small/large-sunflower-standing-out-in-sunflower-field-photo.jpeg" },
+        { id: 13, title: "Sunset", category: "abstract", thumb: "https://www.popsci.com/wp-content/uploads/2018/12/10/QKOPUFKJMVV7JE2YNBCV2FILFQ.jpg?quality=85", hd: "https://www.popsci.com/wp-content/uploads/2018/12/10/QKOPUFKJMVV7JE2YNBCV2FILFQ.jpg?quality=85" },
+        { id: 14, title: "Tajmahal", category: "abstract", thumb: "https://media.istockphoto.com/id/519330110/photo/taj-mahal-agra-india-monument-of-love-in-blue-sky.jpg?s=612x612&w=0&k=20&c=Uma6Q7KduznA6jUKcSquFP1iHHiw8UXcZEYVLONrmaQ=", hd: "https://media.istockphoto.com/id/519330110/photo/taj-mahal-agra-india-monument-of-love-in-blue-sky.jpg?s=612x612&w=0&k=20&c=Uma6Q7KduznA6jUKcSquFP1iHHiw8UXcZEYVLONrmaQ=" },
+        { id: 15, title: "Maldive", category: "abstract", thumb: "https://cdn.pixabay.com/video/2025/01/22/253907_tiny.jpg", hd: "https://cdn.pixabay.com/video/2025/01/22/253907_tiny.jpg" },
+        
+        // SPACE
+        { id: 16, title: "Kashmir Valley", category: "space", thumb: "https://t4.ftcdn.net/jpg/17/45/71/77/360_F_1745717752_QDaelO2cgtW1qbHbMJkH28xuD4BSQ5vd.jpg", hd: "https://t4.ftcdn.net/jpg/17/45/71/77/360_F_1745717752_QDaelO2cgtW1qbHbMJkH28xuD4BSQ5vd.jpg" },
+        { id: 17, title: "Ladakh", category: "space", thumb: "https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bGFkYWtofGVufDB8fDB8fHww", hd: "https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bGFkYWtofGVufDB8fDB8fHww" },
+        { id: 18, title: "Ladakh", category: "space", thumb: "https://unpluggedlife.in/wp-content/uploads/2023/03/Unplugged_Life_Trip_Pangong_3-1170x658.jpg", hd: "https://unpluggedlife.in/wp-content/uploads/2023/03/Unplugged_Life_Trip_Pangong_3-1170x658.jpg" },
+        { id: 19, title: "Newyork", category: "space", thumb: "https://img.freepik.com/premium-photo/new-york-city-lights_119101-83.jpg?semt=ais_hybrid&w=740&q=80", hd: "https://img.freepik.com/premium-photo/new-york-city-lights_119101-83.jpg?semt=ais_hybrid&w=740&q=80" },
+        { id: 20, title: "JAI SHREE RAM 🚩", category: "space", thumb: "https://wallpapercave.com/wp/wp12455735.jpg", hd: "https://wallpapercave.com/wp/wp12455735.jpg" },
+        
+        // MY PHOTOS (personal collection)
+        { id: 21, title: "My Memories", category: "myphotos", thumb: "vipul1.jpeg", hd: "vipul1.jpeg" },
+        { id: 22, title: "My Favorite Spot", category: "myphotos", thumb: "vipul2.jpeg", hd: "vipul2.jpeg" },
+        { id: 23, title: "My Creative Shot", category: "myphotos", thumb: "vipul3.jpeg", hd: "vipul3.jpeg" },
+        { id: 27, title: "Long Drive😱", category: "myphotos", thumb: "vipul4.jpeg", hd: "vipul4.jpeg" },
+        
+        // MY BIKES
+        { id: 24, title: "Adventure Bike", category: "mybikes", thumb: "https://wallpapers.com/images/featured/4k-bike-p5ztqfie3vnj5kkp.jpg", hd: "https://wallpapers.com/images/featured/4k-bike-p5ztqfie3vnj5kkp.jpg" },
+        { id: 25, title: "KTM😍 Motorcycle", category: "mybikes", thumb: "https://jooinn.com/images/sports-bike.jpg", hd: "https://jooinn.com/images/sports-bike.jpg" },
+        { id: 26, title: "Sport Bike", category: "mybikes", thumb: "https://wallpaperaccess.com/full/9399480.jpg", hd: "https://wallpaperaccess.com/full/9399480.jpg" },
+        
+        // MY CARS
+        { id: 28, title: "Luxury Sports Car", category: "mycars", thumb: "https://images.pexels.com/photos/6239334/pexels-photo-6239334.jpeg", hd: "https://images.pexels.com/photos/6239334/pexels-photo-6239334.jpeg" },
+        { id: 29, title: "Luxury + powerful", category: "mycars", thumb: "https://img.autotrader.co.za/23992530/Crop860x650", hd: "https://img.autotrader.co.za/23992530/Crop860x650" },
+        { id: 30, title: "Supercar", category: "mycars", thumb: "https://images.pexels.com/photos/337909/pexels-photo-337909.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop", hd: "https://images.pexels.com/photos/337909/pexels-photo-337909.jpeg?auto=compress&cs=tinysrgb&w=1200" },
+        { id: 31, title: "Tharroxx", category: "mycars", thumb: "https://motoringworld.in/wp-content/uploads/2024/08/Roxx-106-scaled.jpg", hd: "https://motoringworld.in/wp-content/uploads/2024/08/Roxx-106-scaled.jpg" },
+
+        
+        // MY WATCHES
+        { id: 32, title: "Luxury Watch", category: "mywatches", thumb: "https://www.theluxuryhut.com/_next/image/?url=https%3A%2F%2Fassets.theluxuryhut.com%2Fcms%2Fadmin%2Fupload%2F1724418702secrets-of-rolex-watches.jpg&w=3840&q=75", hd: "https://www.theluxuryhut.com/_next/image/?url=https%3A%2F%2Fassets.theluxuryhut.com%2Fcms%2Fadmin%2Fupload%2F1724418702secrets-of-rolex-watches.jpg&w=3840&q=75" },
+        { id: 33, title: "Luxury + powerful", category: "mywatches", thumb: "https://globalboutique.com/wp-content/uploads/2023/05/featured-gold-watches-800x600.jpg", hd: "https://globalboutique.com/wp-content/uploads/2023/05/featured-gold-watches-800x600.jpg" },
+        { id: 34, title: "Smart Watch", category: "mywatches", thumb: "https://thumbs.dreamstime.com/b/apple-watch-series-aluminium-case-blue-color-sports-loop-apple-watch-series-133033259.jpg", hd: "https://thumbs.dreamstime.com/b/apple-watch-series-aluminium-case-blue-color-sports-loop-apple-watch-series-133033259.jpg" },
+        { id: 35, title: "Casio ", category: "mywatches", thumb: "https://www.shutterstock.com/image-photo/malang-indonesia-feb-19th-2022-600nw-2125745540.jpg", hd: "https://www.shutterstock.com/image-photo/malang-indonesia-feb-19th-2022-600nw-2125745540.jpg" },
+        
+        // TRAVELING
+        { id: 36, title: "Kerala", category: "traveling", thumb: "https://s3.india.com/wp-content/uploads/2024/12/Eco-friendly-Travel-In-Kerala.jpg##image/jpg", hd: "https://s3.india.com/wp-content/uploads/2024/12/Eco-friendly-Travel-In-Kerala.jpg##image/jpg" },
+        { id: 37, title: "Bali", category: "traveling", thumb: "https://media.tacdn.com/media/attractions-splice-spp-674x446/11/fa/73/79.jpg", hd: "https://media.tacdn.com/media/attractions-splice-spp-674x446/11/fa/73/79.jpg" },
+        { id: 38, title: "Paris⛪️", category: "traveling", thumb: "https://c4.wallpaperflare.com/wallpaper/148/35/765/eiffel-tower-paris-france-wallpaper-preview.jpg", hd: "https://c4.wallpaperflare.com/wallpaper/148/35/765/eiffel-tower-paris-france-wallpaper-preview.jpg" },
+        { id: 39, title: "Burj khalifa", category: "traveling", thumb: "https://t4.ftcdn.net/jpg/03/85/46/27/360_F_385462707_owlA1exl4DBKVO7N6TvTHm447mT5VKtA.jpg", hd: "https://t4.ftcdn.net/jpg/03/85/46/27/360_F_385462707_owlA1exl4DBKVO7N6TvTHm447mT5VKtA.jpg" }
+    ];
+
+    // DOM elements
+    const grid = document.getElementById('grid');
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const categoryBtns = document.querySelectorAll('.cat-btn');
+    const modal = document.getElementById('modal');
+    const modalImg = document.getElementById('modalImg');
+    const modalApply = document.getElementById('modalApply');
+    const modalDownload = document.getElementById('modalDownload');
+    const modalClose = document.getElementById('modalClose');
+    const toast = document.getElementById('toast');
+
+    let currentCategory = 'all';
+    let currentSearch = '';
+    let currentWallpaper = null;
+
+    function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    function applyWallpaper(url) {
+        document.body.style.backgroundImage = `url('${url}')`;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center';
+        document.body.style.backgroundAttachment = 'fixed';
+        showToast('✓ Wallpaper applied!');
+    }
+
+    async function downloadImage(url, filename) {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = filename.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.jpg';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(blobUrl);
+            showToast('✓ Downloaded!');
+        } catch {
+            window.open(url, '_blank');
+            showToast('⚠️ Right-click to save');
+        }
+    }
+
+    function render() {
+        let filtered = wallpapers.filter(w => {
+            if (currentCategory !== 'all' && w.category !== currentCategory) return false;
+            if (currentSearch && !w.title.toLowerCase().includes(currentSearch.toLowerCase())) return false;
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            grid.innerHTML = '<div class="empty">✨ No wallpapers found</div>';
+            return;
+        }
+
+        grid.innerHTML = filtered.map(w => `
+            <div class="card" data-id="${w.id}">
+                <img src="${w.thumb}" alt="${w.title}" loading="lazy">
+                <div class="info">
+                    <span class="title">${w.title}</span>
+                    <div class="btn-group">
+                        <button class="apply" data-id="${w.id}">Apply</button>
+                        <button class="download" data-id="${w.id}">Download</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        document.querySelectorAll('.card').forEach(card => {
+            const id = parseInt(card.dataset.id);
+            const wall = wallpapers.find(w => w.id === id);
+            if (!wall) return;
+
+            card.addEventListener('click', (e) => {
+                if (e.target.classList.contains('apply') || e.target.classList.contains('download')) return;
+                openModal(wall);
+            });
+
+            const applyBtn = card.querySelector('.apply');
+            applyBtn?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                applyWallpaper(wall.hd);
+            });
+
+            const downloadBtn = card.querySelector('.download');
+            downloadBtn?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                downloadImage(wall.hd, wall.title);
+            });
+        });
+    }
+
+    function openModal(wall) {
+        currentWallpaper = wall;
+        modalImg.src = wall.hd;
+        modal.classList.add('active');
+    }
+    
+    function closeModal() {
+        modal.classList.remove('active');
+        currentWallpaper = null;
+    }
+
+    modalApply.onclick = () => {
+        if (currentWallpaper) applyWallpaper(currentWallpaper.hd);
+        closeModal();
+    };
+    modalDownload.onclick = () => {
+        if (currentWallpaper) downloadImage(currentWallpaper.hd, currentWallpaper.title);
+    };
+    modalClose.onclick = closeModal;
+    modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+    document.onkeydown = (e) => { if (e.key === 'Escape') closeModal(); };
+
+    searchBtn.onclick = () => {
+        currentSearch = searchInput.value;
+        render();
+    };
+    searchInput.onkeyup = (e) => {
+        if (e.key === 'Enter') {
+            currentSearch = searchInput.value;
+            render();
+        }
+    };
+
+    categoryBtns.forEach(btn => {
+        btn.onclick = () => {
+            categoryBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentCategory = btn.dataset.cat;
+            render();
+        };
+    });
+
+    render();
+    showToast('🎨 Click Apply to set background | Download to save');
+</script>
+</body>
+</html>
